@@ -1,0 +1,44 @@
+#! /usr/bin/env python
+#
+# Copyright: Ben Bridts - (c) 2010-2012 benbridts.be
+#
+
+# http://developer.pidgin.im/wiki/DbusHowto
+import dbus
+import os
+import random
+bus = dbus.SessionBus()
+obj = bus.get_object("im.pidgin.purple.PurpleService", "/im/pidgin/purple/PurpleObject")
+purple = dbus.Interface(obj, "im.pidgin.purple.PurpleInterface")
+
+def set_message(message):
+    # Get current status type (Available/Away/etc.)
+    current = purple.PurpleSavedstatusGetType(purple.PurpleSavedstatusGetCurrent())
+    # Create new transient status and activate it
+    status = purple.PurpleSavedstatusNew("", current)
+    purple.PurpleSavedstatusSetMessage(status, message)
+    purple.PurpleSavedstatusActivate(status)
+def clean_string(string):
+    string = string.rstrip(os.linesep)
+    string = string.partition('#')[0]
+    string = string.strip()
+    return string
+
+def get_random_line(handle):
+    lines = handle.readlines()
+    count = len(lines)-1
+    line = ""
+    if(count == 0):
+        line = clean_string(lines[0])
+    elif (count > 0):
+        i = 0
+        while (line == "" and i < count ):
+            lineNumber = random.randint(0,count)
+            line = clean_string(lines[lineNumber])
+            i += 1
+    return line
+
+
+handle = open('status.txt','r')
+status = get_random_line(handle)
+set_message(status)

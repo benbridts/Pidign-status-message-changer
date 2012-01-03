@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# 
+# Copyright: Ben Bridts - (c) 2010-2012 benbridts.be
+#
+
+# Get the pid of gnome-session and pidgin
+session_pid=$(pgrep -u $LOGNAME -n gnome-session)
+pidgin_pid=$(pgrep -u $LOGNAME -n pidgin)
+
+# Is pidgin running?
+if [ -z "$pidgin_pid" ]; then
+echo "pidgin isn't running" >&2
+exit 1
+fi
+
+# Is gnome-session running?
+if [ -z "$session_pid" ]; then
+echo "can't find pid of gnome-session" >&2
+exit 2
+fi
+
+# Grab the DBUS_SESSION_BUS_ADDRESS variable from pidgin's environment
+eval $(tr '\0' '\n' < /proc/$session_pid/environ | grep '^DBUS_SESSION_BUS_ADDRESS=')
+
+# Check that we actually found it
+if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+echo "Failed to find bus address" >&2
+exit 3
+fi
+echo $DBUS_SESSION_BUS_ADDRESS
+# export it so that child processes will inherit it
+export DBUS_SESSION_BUS_ADDRESS
+pidgin_status
+exit 0

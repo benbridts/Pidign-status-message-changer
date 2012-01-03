@@ -1,0 +1,4 @@
+# Add lines to use as status messages
+# Everyting after a '#' will be ignored
+# blank lines will be ignored
+# leading and trailing whitespace will be stripped
